@@ -12,8 +12,9 @@ def scrape_and_save_to_csv():
         url = base_url.format(page_number)
         response = requests.get(url)
 
+
         if response.status_code == 200:
-            soup = BeautifulSoup(response.content, 'html.parser')
+            soup = BeautifulSoup(response.text, 'html.parser')
             book_elements = soup.find_all('a', class_='authorAllBooks__singleTextTitle float-left')
 
             for book_element in book_elements:
@@ -21,7 +22,7 @@ def scrape_and_save_to_csv():
                 book_response = requests.get(book_link)
 
                 if book_response.status_code == 200:
-                    book_soup = BeautifulSoup(book_response.content, 'html.parser')
+                    book_soup = BeautifulSoup(book_response.text, 'html.parser')
 
                     book_title_elem = book_soup.find('h1', class_='book__title')
                     book_title = None
@@ -65,6 +66,8 @@ def scrape_and_save_to_csv():
                             print(f"Release Date: {release_date}")
                             print(f"Page Count: {page_count}")
                             print(f"Language: {language}")
+                        else:
+                            print("Error: Details section does not contain 'dl' element")
 
                         scraped_data.append({
                             'book_title': book_title,
@@ -75,7 +78,7 @@ def scrape_and_save_to_csv():
                             'description': description,
                             'book_link': book_link
                         })
-
+                    
                     else:
                         print(f"Error: Book details section not found on page {book_link}")
                 else:
@@ -83,7 +86,7 @@ def scrape_and_save_to_csv():
         else:
             print(f"Error: Unable to fetch page {page_number}. Status code: {response.status_code}")
 
-    csv_filename = "scraped_datav2.csv"
+    csv_filename = "scraped_data_part2.csv"
     with open(csv_filename, mode='w', newline='', encoding='utf-8') as csv_file:
         fieldnames = ['book_title', 'author_name', 'release_date', 'page_count', 'language', 'description', 'book_link']
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
