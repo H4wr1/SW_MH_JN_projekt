@@ -73,11 +73,12 @@ def clean_and_tokenize(text, language):
     # Remove stopwords based on language
     stop_words = stopword_dict.get(language, [])
     tokens = [word for word in tokens if word not in stop_words]
-    #if language == 'en':
-        #lemmatized_words = [simplemma.lemmatize(word, lang='en') for word in tokens]
-    #else:
-        #lemmatized_words = [simplemma.lemmatize(word, lang=('en',language)) for word in tokens]
-    return tokens
+    if language == 'en':
+        lemmatized_words = [simplemma.lemmatize(word, lang='en') for word in tokens]
+    else:
+        lemmatized_words = [simplemma.lemmatize(word, lang=('en',language)) for word in tokens]
+    print(lemmatized_words)
+    return lemmatized_words
 
 # Clean and tokenize the 'book_title' column
 df['cleaned_title'] = df.apply(lambda row: clean_and_tokenize(row['book_title'], row['language']), axis=1)
@@ -91,22 +92,27 @@ print(df['cleaned_title'])
 
 print("\nCleaned and tokenized 'description' column:")
 print(df['cleaned_description'])
+output_file_path = 'lemmatized_data.csv'
+df.to_csv(output_file_path, index=False)
 
+print(f"Processed DataFrame saved to {output_file_path}")
 # Combine 'cleaned_title' and 'cleaned_description' columns
-df['combined_text'] = (2 * df['cleaned_title'].apply(lambda x: ' '.join(x)) +
-                       df['cleaned_description'].apply(lambda x: ' '.join(x)))
+#df['combined_text'] = (2 * df['cleaned_title'].apply(lambda x: ' '.join(x)) +
+                       #df['cleaned_description'].apply(lambda x: ' '.join(x)))
+
+
 
 # Initialize the TfidfVectorizer with custom weights
-vectorizer = TfidfVectorizer(sublinear_tf=True)
+#vectorizer = TfidfVectorizer(sublinear_tf=True)
 
 # Fit and transform the corpus
-tfidf_matrix = vectorizer.fit_transform(df['combined_text'])
+#tfidf_matrix = vectorizer.fit_transform(df['combined_text'])
 
 # Create a DataFrame with the TF-IDF values
-tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=vectorizer.get_feature_names_out())
+#tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=vectorizer.get_feature_names_out())
 
 # Display the TF-IDF DataFrame
-print("TF-IDF DataFrame:")
-print(tfidf_df)
+#print("TF-IDF DataFrame:")
+#print(tfidf_df)
 #num_rows = df.shape[0]
 #print("Number of rows:", num_rows)
