@@ -3,9 +3,6 @@ import math
 import re
 import pandas as pd
 from nltk.tokenize import RegexpTokenizer
-#import csv
-
-
 
 def calculate_tf(document):
     word_counts = Counter(document)
@@ -44,13 +41,12 @@ def calculate_measures(query_text):
     df = pd.read_csv('data_for_measures.csv')
 
     tokenizer = RegexpTokenizer(r'\w+')
-    # Assuming 'combined_text' is the column containing text data in the DataFrame 'df'
+
     documents = df['combined_text'].apply(lambda x: tokenizer.tokenize(str(x).lower())).tolist()
 
     idf_values = calculate_idf(documents)
     tf_idf_values = calculate_tf_idf(documents, idf_values)
-    #print(tf_idf_values)
-    #query_text = input("pisz")
+ 
     tokenizer = RegexpTokenizer(r'\w+')
     query_tf = tokenizer.tokenize(str(query_text).lower())
     query_tf_idf = {word: query_tf.count(word) / len(query_tf) * idf_values.get(word, 0) for word in query_tf}
@@ -78,14 +74,13 @@ def calculate_measures(query_text):
 
     sorted_books = sorted(results, key=lambda x: x[2], reverse=True)
 
-    # Selecting the top 3 lists
     top_3_books = sorted_books[:3]
     for book in top_3_books:
         book.append(df['book_title'][book[4]])
         book.append(df['author_name'][book[4]])
         book.append(df['book_link'][book[4]])
         book.pop(4)
-        #result.extend(book)
+
         
     print(top_3_books)
 

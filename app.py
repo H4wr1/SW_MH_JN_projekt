@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    result = []  # Initialize result to an empty list
+    result = []  
     if request.method == 'POST':
         user_input = request.form['user_input']
         print(f'Text received: {user_input}', flush=True)
