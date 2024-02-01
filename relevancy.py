@@ -1,13 +1,13 @@
 import pandas as pd
-import simplemma
-import re
+#import simplemma
+#import re
 from nltk.tokenize import RegexpTokenizer
 import json
 import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-import string
+#from nltk.corpus import stopwords
+#import string
 
 # Load the stopwords JSON file
 with open('stopwords-iso.json', 'r', encoding='utf-8') as file:
@@ -64,21 +64,12 @@ print(df)
 num_rows = df.shape[0]
 print("Number of rows after dropping NaN values:", num_rows)
 
-# Text data preprocessing for 'book_title' and 'description'
 def clean_and_tokenize(text, language):
-    # Remove punctuation and convert to lowercase
     tokenizer = RegexpTokenizer(r'\w+')
     tokens = tokenizer.tokenize(str(text).lower())
-    
-    # Remove stopwords based on language
     stop_words = stopword_dict.get(language, [])
     tokens = [word for word in tokens if word not in stop_words]
-    if language == 'en':
-        lemmatized_words = [simplemma.lemmatize(word, lang='en') for word in tokens]
-    else:
-        lemmatized_words = [simplemma.lemmatize(word, lang=('en',language)) for word in tokens]
-    print(lemmatized_words)
-    return lemmatized_words
+    return tokens
 
 # Clean and tokenize the 'book_title' column
 df['cleaned_title'] = df.apply(lambda row: clean_and_tokenize(row['book_title'], row['language']), axis=1)
@@ -92,14 +83,27 @@ print(df['cleaned_title'])
 
 print("\nCleaned and tokenized 'description' column:")
 print(df['cleaned_description'])
-output_file_path = 'lemmatized_data.csv'
-df.to_csv(output_file_path, index=False)
+df = df.dropna()
 
-print(f"Processed DataFrame saved to {output_file_path}")
+
+#print(f"Processed DataFrame saved to {output_file_path}")
 # Combine 'cleaned_title' and 'cleaned_description' columns
-#df['combined_text'] = (2 * df['cleaned_title'].apply(lambda x: ' '.join(x)) +
-                       #df['cleaned_description'].apply(lambda x: ' '.join(x)))
+df['combined_text'] = (2 * df['cleaned_title'].apply(lambda x: ' '.join(x)) +
+                       df['cleaned_description'].apply(lambda x: ' '.join(x)))
+# Change page_count to integers
+df['page_count'] = df['page_count'].astype(int)
 
+# Convert release_date to datetime and set to 'year-01-01' if only year is present
+# Convert release_date to datetime and set to 'year-01-01' if only year is present
+df['release_date'] = pd.to_datetime(df['release_date'], errors='coerce')
+
+# Update release_date for rows where only year is present
+mask = df['release_date'].dt.year.apply(lambda x: pd.notnull(x) and pd.isna(df['release_date'].dt.month.iloc[0]))
+df.loc[mask, 'release_date'] = df['release_date'][mask].apply(lambda x: pd.to_datetime(str(int(x)) + '-01-01'))
+
+
+output_file_path = 'data_for_measures.csv'
+df.to_csv(output_file_path, index=False)
 
 
 # Initialize the TfidfVectorizer with custom weights
@@ -110,9 +114,18 @@ print(f"Processed DataFrame saved to {output_file_path}")
 
 # Create a DataFrame with the TF-IDF values
 #tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=vectorizer.get_feature_names_out())
-
+#print(tfidf_df)
+#print("YES")
 # Display the TF-IDF DataFrame
 #print("TF-IDF DataFrame:")
 #print(tfidf_df)
+#num_rows = df.shape[0]
+#print("Number of rows:", num_rows)
+#tfidf_df_rows = tfidf_df.shape[0]
+#print("Number of rows:", tfidf_df_rows)
+#tfidf_output_file_path = 'tfidf_data.csv'
+#tfidf_df.to_csv(tfidf_output_file_path, index=False)
+#output_file_path = 'tfidf_data.csv'
+#df.to_csv(tfidf_df, index=False)
 #num_rows = df.shape[0]
 #print("Number of rows:", num_rows)

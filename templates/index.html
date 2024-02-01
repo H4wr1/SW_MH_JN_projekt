@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Książkomat</title>
+</head>
+<body>
+    <h1>Formularz</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form method="post" action="/">
+        <label for="user_input">Wprowadź tekst:</label>
+        <input type="text" id="user_input" name="user_input" required>
+        <button type="submit">Wyślij</button>
+    </form>
+
+    {% if result %}
+        <h2>Results:</h2>
+        <ul>
+            {% for item in result %}
+                <li>
+                    <strong>Similarity Measures:</strong> {{ item[0] }} | {{ item[1] }} | {{ item[2] }} | {{ item[3] }}<br>
+                    <strong>Title:</strong> {{ item[4] }}<br>
+                    <strong>Author:</strong> {{ item[5] }}<br>
+                    <strong>Link:</strong> <a href="{{ item[6] }}" target="_blank">{{ item[4] }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
