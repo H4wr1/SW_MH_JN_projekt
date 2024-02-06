@@ -6,7 +6,7 @@
     <title>Książkomat</title>
 </head>
 <body>
-    <h1>Formularz</h1>
+    <h1>Książkomat</h1>
     
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -21,8 +21,27 @@
     <form method="post" action="/">
         <label for="user_input">Wprowadź tekst:</label>
         <input type="text" id="user_input" name="user_input" required>
+        <!-- Centered section -->
+        <div style="text-align: center;">
+            <label for="min_page_count" class="right-align">Min Page Count:</label>
+            <input type="number" id="min_page_count" name="min_page_count">
+    
+            <label for="max_page_count" class="right-align">Max Page Count:</label>
+            <input type="number" id="max_page_count" name="max_page_count">
+    
+            <label for="min_release_date" class="right-align">Min Release Date:</label>
+            <input type="date" id="min_release_date" name="min_release_date">
+    
+            <label for="max_release_date" class="right-align">Max Release Date:</label>
+            <input type="date" id="max_release_date" name="max_release_date">
+        </div>
+        <!-- End of centered section -->
+    
+        <br> <!-- Add a line break here -->
         <button type="submit">Wyślij</button>
     </form>
+    
+    
 
     {% if result %}
         <h2>Results:</h2>
@@ -32,7 +51,9 @@
                     <strong>Similarity Measures:</strong> {{ item[0] }} | {{ item[1] }} | {{ item[2] }} | {{ item[3] }}<br>
                     <strong>Title:</strong> {{ item[4] }}<br>
                     <strong>Author:</strong> {{ item[5] }}<br>
-                    <strong>Link:</strong> <a href="{{ item[6] }}" target="_blank">{{ item[4] }}</a>
+                    <strong>Publication date:</strong> {{ item[6] }}<br>
+                    <strong>Page count:</strong> {{ item[7] }}<br>
+                    <strong>Link:</strong> <a href="{{ item[8] }}" target="_blank">{{ item[4] }}</a>
                 </li>
             {% endfor %}
         </ul>

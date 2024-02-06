@@ -3,7 +3,8 @@ import math
 import re
 import pandas as pd
 from nltk.tokenize import RegexpTokenizer
-
+import simplemma
+from datetime import datetime
 def calculate_tf(document):
     word_counts = Counter(document)
     max_frequency = max(word_counts.values())
@@ -37,8 +38,24 @@ def calculate_tf_idf(documents, idf_values):
 
     return tf_idf_values
 
-def calculate_measures(query_text):
+def calculate_measures(query_text, page_count_min, page_count_max, release_date_min, release_date_max):
     df = pd.read_csv('data_for_measures.csv')
+    if page_count_min != "":
+        df = df[df['page_count'] >= int(page_count_min)]
+
+    if page_count_max != "":
+        df = df[df['page_count'] <= int(page_count_max)]
+    #print(df)
+    # Convert input date strings to datetime objects
+    #release_date_min = datetime.strptime(release_date_min, '%Y-%m-%d') if release_date_min else None
+    #release_date_max = datetime.strptime(release_date_max, '%Y-%m-%d') if release_date_max else None
+
+    # Filter the DataFrame based on release_date_min and release_date_max if they are not None
+    if release_date_min !="":
+        df = df[df['release_date'] >= release_date_min]
+
+    if release_date_max !="":
+        df = df[df['release_date'] <= release_date_max]
 
     tokenizer = RegexpTokenizer(r'\w+')
 
@@ -46,9 +63,15 @@ def calculate_measures(query_text):
 
     idf_values = calculate_idf(documents)
     tf_idf_values = calculate_tf_idf(documents, idf_values)
- 
+    #print(tf_idf_values)
     tokenizer = RegexpTokenizer(r'\w+')
     query_tf = tokenizer.tokenize(str(query_text).lower())
+    #query_tf_2 = []
+    #for word in query_tf:
+        #result = simplemma.langdetect.lang_detector(word)
+        #main_language = max(result, key=lambda x: x[1])[0]
+        #word_lemma = simplemma.lemmatize(word, lang=main_language)
+        #query_tf_2.append(word_lemma)
     query_tf_idf = {word: query_tf.count(word) / len(query_tf) * idf_values.get(word, 0) for word in query_tf}
     results = []
     for count,doc_tf_idf in enumerate(tf_idf_values):
@@ -57,29 +80,33 @@ def calculate_measures(query_text):
         
         sum_squared_tf_idf = sum(value ** 2 for word, value in doc_tf_idf.items() if word in query_tf)
         
-        if sum_squared_tf_idf == 0:
+        if sum_squared_tf_idf != 0:
 
-            result.extend([0.0, 0.0, 0.0, 0.0])
-        else:
             iloczyn = sum(doc_tf_idf.get(word, 0) for word in query_tf if word in doc_tf_idf)
-            result.append(round(iloczyn, 2))
+            result.append(round(iloczyn, 3))
             dice = (2 * iloczyn) / (4 * sum_squared_tf_idf)
-            result.append(round(dice, 2))
+            result.append(round(dice, 3))
             jaccard = iloczyn / (4 + sum_squared_tf_idf - iloczyn)
-            result.append(round(jaccard, 2))
+            result.append(round(jaccard, 3))
             cosinus = iloczyn / (math.sqrt(4) * math.sqrt(sum_squared_tf_idf))
-            result.append(round(cosinus, 2))
+            result.append(round(cosinus, 3))
             result.append(count)
-        results.append(result)  
+            results.append(result) 
+    print(df)   
 
-    sorted_books = sorted(results, key=lambda x: x[2], reverse=True)
+    sorted_books = sorted(results, key=lambda x: (x[3], x[2], x[1], x[0]), reverse=True)
 
-    top_3_books = sorted_books[:3]
+    top_3_books = sorted_books[:5]
     for book in top_3_books:
-        book.append(df['book_title'][book[4]])
-        book.append(df['author_name'][book[4]])
-        book.append(df['book_link'][book[4]])
+        id_of_book = book[4]
         book.pop(4)
+        book_info = df.iloc[id_of_book]
+        book.append(book_info['book_title'])
+        book.append(book_info['author_name'])
+        book.append(book_info['release_date'])
+        book.append(book_info['page_count'])
+        book.append(book_info['book_link'])
+        #book.pop(4)
 
         
     print(top_3_books)
